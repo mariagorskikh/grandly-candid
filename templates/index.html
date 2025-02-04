@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grantly - Find Your Perfect Grant</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #E65100;
+            --primary-light: #FF833A;
+            --primary-dark: #AC1900;
+            --secondary-color: #4A148C;
+            --secondary-light: #7C43BD;
+            --secondary-dark: #12005E;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary-color); /* Fallback */
+        }
+        
+        .search-gradient {
+            background: linear-gradient(135deg, #FFF3E0 0%, #F3E5F5 100%);
+            border: 2px solid #FFE0B2;
+        }
+        
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(230, 81, 0, 0.1);
+        }
+        
+        .advanced-toggle {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .advanced-toggle:hover {
+            color: var(--primary-dark);
+        }
+        
+        .search-button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        .search-button:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+        }
+        
+        /* High contrast form elements */
+        .form-label {
+            color: #1A237E !important;
+            font-weight: 600 !important;
+        }
+        
+        .form-input {
+            background-color: white !important;
+            border-color: #CFD8DC !important;
+            color: #263238 !important;
+        }
+        
+        .form-input::placeholder {
+            color: #78909C !important;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.2) !important;
+        }
+        
+        /* Results styling */
+        .result-card {
+            border: 1px solid #E0E0E0;
+            background: white;
+        }
+        
+        .result-card:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .result-title {
+            color: var(--primary-color);
+        }
+        
+        .result-label {
+            color: #455A64 !important;
+            font-weight: 600;
+        }
+        
+        .result-value {
+            color: #263238;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-extrabold mb-4">
+                <span class="gradient-text">Grantly</span>
+            </h1>
+            <p class="text-2xl text-gray-800 max-w-2xl mx-auto font-medium">
+                Discover the perfect funding opportunities for your mission
+            </p>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- Search Form -->
+            <div class="search-gradient rounded-2xl shadow-lg p-8 mb-8">
+                <form id="search-form" class="space-y-6">
+                    <!-- Main Search -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label block text-lg mb-2">What are you looking for?</label>
+                            <input type="text" 
+                                   name="query" 
+                                   class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus"
+                                   placeholder="e.g., education, research, community development">
+                        </div>
+                        <div>
+                            <label class="form-label block text-lg mb-2">Location</label>
+                            <input type="text" 
+                                   name="location" 
+                                   class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus"
+                                   placeholder="e.g., California, New York">
+                        </div>
+                    </div>
+
+                    <!-- Advanced Search Toggle -->
+                    <div class="pt-4">
+                        <button type="button" 
+                                id="advanced-toggle"
+                                class="advanced-toggle flex items-center text-lg">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            Advanced Search Options
+                        </button>
+                    </div>
+
+                    <!-- Advanced Search (Hidden by default) -->
+                    <div id="advanced-options" class="hidden space-y-6 pt-4 border-t-2 border-orange-200">
+                        <!-- Location Type -->
+                        <div>
+                            <label class="form-label block text-lg mb-2">Location Type</label>
+                            <select name="location_type" 
+                                    class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus">
+                                <option value="">Any</option>
+                                <option value="funder">Funder Location</option>
+                                <option value="recipient">Recipient Location</option>
+                                <option value="area_served">Area Served</option>
+                            </select>
+                        </div>
+
+                        <!-- Amount Range -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label block text-lg mb-2">Minimum Amount ($)</label>
+                                <input type="number" 
+                                       name="min_amt" 
+                                       class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus">
+                            </div>
+                            <div>
+                                <label class="form-label block text-lg mb-2">Maximum Amount ($)</label>
+                                <input type="number" 
+                                       name="max_amt" 
+                                       class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus">
+                            </div>
+                        </div>
+
+                        <!-- Years -->
+                        <div>
+                            <label class="form-label block text-lg mb-2">Grant Years</label>
+                            <input type="text" 
+                                   name="year" 
+                                   class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus"
+                                   placeholder="e.g., 2023, 2024">
+                        </div>
+
+                        <!-- Subject and Population -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label block text-lg mb-2">Subject Codes</label>
+                                <input type="text" 
+                                       name="subject" 
+                                       class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus"
+                                       placeholder="e.g., SN0201,SN0202">
+                            </div>
+                            <div>
+                                <label class="form-label block text-lg mb-2">Population Codes</label>
+                                <input type="text" 
+                                       name="population" 
+                                       class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus"
+                                       placeholder="e.g., PG0302">
+                            </div>
+                        </div>
+
+                        <!-- Additional Fields -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label block text-lg mb-2">ID Type</label>
+                                <select name="id_type" 
+                                        class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus">
+                                    <option value="">None</option>
+                                    <option value="ein">EIN</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label block text-lg mb-2">Include Government</label>
+                                <select name="include_gov" 
+                                        class="form-input w-full p-4 border-2 rounded-xl text-lg input-focus">
+                                    <option value="">Any</option>
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="pt-6">
+                        <button type="submit" 
+                                class="search-button w-full text-white text-xl font-bold py-4 px-8 rounded-xl transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2">
+                            Find Grants
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Toggle advanced search options
+        document.getElementById('advanced-toggle').addEventListener('click', function() {
+            const advancedOptions = document.getElementById('advanced-options');
+            const isHidden = advancedOptions.classList.contains('hidden');
+            
+            if (isHidden) {
+                advancedOptions.classList.remove('hidden');
+                this.querySelector('svg').style.transform = 'rotate(180deg)';
+            } else {
+                advancedOptions.classList.add('hidden');
+                this.querySelector('svg').style.transform = 'rotate(0deg)';
+            }
+        });
+    </script>
+</body>
+</html>
