@@ -118,52 +118,69 @@ function displayResults(results) {
         const card = document.createElement('div');
         card.className = 'bg-white rounded-lg shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-200';
         
+        // Header section with name and EIN
         const nameSection = document.createElement('div');
         nameSection.className = 'mb-4';
         nameSection.innerHTML = `
-            <h2 class="text-2xl font-bold text-indigo-900 mb-2">${funder.name || 'Unnamed Funder'}</h2>
+            <h2 class="text-2xl font-bold text-indigo-900 mb-2">${funder.funder_name || 'Unnamed Funder'}</h2>
             ${funder.ein ? `<p class="text-sm text-gray-600">EIN: ${funder.ein}</p>` : ''}
         `;
         
+        // Location and Website section
+        const detailsSection = document.createElement('div');
+        detailsSection.className = 'grid grid-cols-2 gap-4 mb-4';
+        
+        let websiteHtml = '';
+        if (funder.url) {
+            websiteHtml = `
+                <a href="${funder.url}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Visit Website
+                </a>`;
+        }
+        
+        detailsSection.innerHTML = `
+            <div>
+                <h3 class="font-semibold text-gray-700">Location</h3>
+                <p class="text-gray-600">${funder.funder_city || 'N/A'}, ${funder.funder_state || 'N/A'}</p>
+            </div>
+            <div class="flex items-center">
+                ${websiteHtml}
+            </div>
+        `;
+        
+        // AI Summary section
         const summarySection = document.createElement('div');
-        summarySection.className = 'mb-4';
+        summarySection.className = 'mt-4';
         if (funder.ai_summary) {
             summarySection.innerHTML = `
                 <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-indigo-900 mb-2">AI-Generated Summary</h3>
                     <p class="text-gray-700">${funder.ai_summary}</p>
-                    <p class="text-xs text-gray-500 mt-2">Source: ${funder.summary_source}</p>
+                    <p class="text-xs text-gray-500 mt-2">Source: ${funder.summary_source || 'AI Analysis'}</p>
                 </div>
             `;
         }
         
-        const detailsSection = document.createElement('div');
-        detailsSection.className = 'grid grid-cols-2 gap-4 mb-4';
-        detailsSection.innerHTML = `
-            <div>
-                <h3 class="font-semibold text-gray-700">Location</h3>
-                <p class="text-gray-600">${funder.city || 'N/A'}, ${funder.state || 'N/A'}</p>
-            </div>
-            <div>
-                <h3 class="font-semibold text-gray-700">Total Assets</h3>
-                <p class="text-gray-600">${formatCurrency(funder.total_assets)}</p>
-            </div>
-        `;
-        
+        // Recent Giving section (if available)
         const grantsSection = document.createElement('div');
-        if (funder.total_giving) {
+        if (funder.amount_usd) {
             grantsSection.className = 'mt-4 p-4 bg-green-50 rounded-lg';
             grantsSection.innerHTML = `
                 <h3 class="font-semibold text-green-800">Recent Giving</h3>
-                <p class="text-green-700">${formatCurrency(funder.total_giving)}</p>
+                <p class="text-green-700">${formatCurrency(funder.amount_usd)}</p>
             `;
         }
         
         // Assemble the card
         card.appendChild(nameSection);
-        card.appendChild(summarySection);
         card.appendChild(detailsSection);
-        if (funder.total_giving) {
+        card.appendChild(summarySection);
+        if (funder.amount_usd) {
             card.appendChild(grantsSection);
         }
         
