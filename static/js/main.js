@@ -104,110 +104,87 @@ async function searchGrants(params = {}) {
     }
 }
 
-function displayResults(data) {
-    console.log('Displaying results:', data);
+function displayResults(results) {
     const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = ''; // Clear previous results
     
-    if (!data.funders || data.funders.length === 0) {
-        resultsDiv.innerHTML = `
-            <div class="result-card rounded-xl shadow-lg p-8 text-center">
-                <div class="text-5xl mb-4">🔍</div>
-                <div class="text-xl font-medium text-gray-700 mb-2">No funders found</div>
-                <div class="text-gray-500">
-                    Try adjusting your search terms or removing some filters
-                </div>
-            </div>`;
+    if (!results.funders || results.funders.length === 0) {
+        resultsDiv.innerHTML = '<p class="text-gray-600 text-center py-4">No results found</p>';
         return;
     }
-
-    const funders = data.funders;
-    const meta = data.meta || {};
-
-    let html = `
-        <div class="space-y-6">
-            <div class="result-card rounded-xl shadow-lg p-6 mb-4">
-                <div class="text-2xl font-semibold result-title mb-2">
-                    Found ${formatNumber(meta.total_hits || funders.length)} Funders
+    
+    // Display each funder
+    results.funders.forEach(funder => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-200';
+        
+        const nameSection = document.createElement('div');
+        nameSection.className = 'mb-4';
+        nameSection.innerHTML = `
+            <h2 class="text-2xl font-bold text-indigo-900 mb-2">${funder.name || 'Unnamed Funder'}</h2>
+            ${funder.ein ? `<p class="text-sm text-gray-600">EIN: ${funder.ein}</p>` : ''}
+        `;
+        
+        const summarySection = document.createElement('div');
+        summarySection.className = 'mb-4';
+        if (funder.ai_summary) {
+            summarySection.innerHTML = `
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-indigo-900 mb-2">AI-Generated Summary</h3>
+                    <p class="text-gray-700">${funder.ai_summary}</p>
+                    <p class="text-xs text-gray-500 mt-2">Source: ${funder.summary_source}</p>
                 </div>
-                <div class="text-gray-500">
-                    Showing ${funders.length} results per page
-                </div>
+            `;
+        }
+        
+        const detailsSection = document.createElement('div');
+        detailsSection.className = 'grid grid-cols-2 gap-4 mb-4';
+        detailsSection.innerHTML = `
+            <div>
+                <h3 class="font-semibold text-gray-700">Location</h3>
+                <p class="text-gray-600">${funder.city || 'N/A'}, ${funder.state || 'N/A'}</p>
             </div>
-            
-            <div class="space-y-6">
-    `;
-
-    funders.forEach(funder => {
-        html += `
-            <div class="result-card rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
-                <h3 class="text-xl font-semibold result-title mb-4">
-                    ${escapeHtml(funder.funder_name) || 'Unnamed Funder'}
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <div class="result-label text-sm uppercase tracking-wide mb-1">EIN</div>
-                        <div class="result-value font-medium">${escapeHtml(funder.ein) || 'N/A'}</div>
-                    </div>
-                    
-                    <div>
-                        <div class="result-label text-sm uppercase tracking-wide mb-1">Location</div>
-                        <div class="result-value font-medium">${[
-                            funder.funder_city, 
-                            funder.funder_state, 
-                            funder.funder_country
-                        ].filter(Boolean).map(escapeHtml).join(', ') || 'N/A'}</div>
-                    </div>
-                
-                    <div>
-                        <div class="result-label text-sm uppercase tracking-wide mb-1">Number of Grants</div>
-                        <div class="result-value font-medium">${formatNumber(funder.grant_count)}</div>
-                    </div>
-                    
-                    <div>
-                        <div class="result-label text-sm uppercase tracking-wide mb-1">Total Amount</div>
-                        <div class="result-value font-medium">$${formatMoney(funder.amount_usd)}</div>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex flex-wrap gap-4">
-                    ${funder.funder_profile_url ? `
-                        <a href="${escapeHtml(funder.funder_profile_url)}" 
-                           target="_blank" 
-                           class="search-button inline-flex items-center px-4 py-2 text-white rounded-lg transition-all duration-300">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                            </svg>
-                            View on Candid
-                        </a>
-                    ` : ''}
-                    
-                    <a href="https://www.google.com/search?q=${encodeURIComponent(funder.funder_name)}" 
-                       target="_blank" 
-                       class="inline-flex items-center px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                        </svg>
-                        Search on Google
-                    </a>
-                </div>
+            <div>
+                <h3 class="font-semibold text-gray-700">Total Assets</h3>
+                <p class="text-gray-600">${formatCurrency(funder.total_assets)}</p>
             </div>
         `;
+        
+        const grantsSection = document.createElement('div');
+        if (funder.total_giving) {
+            grantsSection.className = 'mt-4 p-4 bg-green-50 rounded-lg';
+            grantsSection.innerHTML = `
+                <h3 class="font-semibold text-green-800">Recent Giving</h3>
+                <p class="text-green-700">${formatCurrency(funder.total_giving)}</p>
+            `;
+        }
+        
+        // Assemble the card
+        card.appendChild(nameSection);
+        card.appendChild(summarySection);
+        card.appendChild(detailsSection);
+        if (funder.total_giving) {
+            card.appendChild(grantsSection);
+        }
+        
+        resultsDiv.appendChild(card);
     });
+    
+    // Show total results count
+    const countDiv = document.createElement('div');
+    countDiv.className = 'text-center text-gray-600 mt-4';
+    countDiv.textContent = `Found ${results.meta.total_hits} results`;
+    resultsDiv.insertBefore(countDiv, resultsDiv.firstChild);
+}
 
-    html += `
-            </div>
-            
-            ${meta.total_hits > funders.length ? `
-            <div class="text-center text-gray-600 mt-8 font-medium">
-                Showing ${funders.length} of ${formatNumber(meta.total_hits)} funders
-            </div>
-            ` : ''}
-        </div>
-    `;
-
-    resultsDiv.innerHTML = html;
+function formatCurrency(amount) {
+    if (!amount) return 'N/A';
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
 }
 
 function formatMoney(amount) {

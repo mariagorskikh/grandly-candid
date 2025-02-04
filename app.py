@@ -3,6 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 import json
+from ai_utils import get_foundation_summary
 
 # Load environment variables
 load_dotenv()
@@ -29,7 +30,7 @@ def search_grants():
     }
     
     try:
-        # Build query parameters - keep it simple
+        # Build query parameters
         params = {}
         
         # Add query parameter if provided
@@ -62,10 +63,19 @@ def search_grants():
         
         response.raise_for_status()
         
-        # Return the funders data
+        # Return the funders data with AI summaries
         if response_data.get('data'):
+            funders = response_data['data'].get('rows', [])
+            
+            # Add AI summaries for each funder
+            for funder in funders:
+                if funder.get('name'):
+                    summary_result = get_foundation_summary(funder['name'])
+                    funder['ai_summary'] = summary_result.get('summary', '')
+                    funder['summary_source'] = summary_result.get('source', '')
+            
             return jsonify({
-                'funders': response_data['data'].get('rows', []),
+                'funders': funders,
                 'meta': {
                     'total_hits': response_data['data'].get('total_hits', 0),
                     'num_pages': response_data['data'].get('num_pages', 0)
